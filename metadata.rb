@@ -1,0 +1,5 @@
+name        'discourse_docker'
+description 'Installs the discourse docker machine'
+maintainer  'Gerrit Visscher'
+version     '1.0.0'
+depends     'docker'
