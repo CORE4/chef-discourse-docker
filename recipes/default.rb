@@ -14,18 +14,22 @@
 #./launcher bootstrap app
 #./launcher start app
 
-execute 'create_ssh_key' do
-  command 'ssh-keygen -b 1024 -t rsa -N "" -C "Disourse access key" -f /root/.ssh/discourse;' +
-          'cat /root/.ssh/discourse.pub >> /root/.ssh/authorized_keys'
-  action :run
-  cwd '/root'
-  creates '/root/.ssh/discourse'
-end
-
 git node['discourse']['directory'] do
-  checkout_branch node['discourse']['git']['branch']
+  #checkout_branch node['discourse']['git']['branch']
   repository node['discourse']['git']['remote']
   action :sync
+end
+
+cookbook_file '/root/.ssh/discourse_key' do
+  source 'discourse_key'
+  mode '0600'
+  action :create
+end
+
+cookbook_file '/root/.ssh/discourse_key.pub' do
+  source 'discourse_key.pub'
+  mode '0600'
+  action :create
 end
 
 template '/var/discourse/containers/app.yml' do
@@ -34,10 +38,17 @@ template '/var/discourse/containers/app.yml' do
   group 'root'
   mode '0755'
   variables({settings: node['discourse']})
+  action :create
+end
+
+directory '/var/discourse/shared/standalone' do
+  action :delete
+  recursive true
+  only_if { node['discourse']['rebuild'] }
 end
 
 execute 'bootstrap_discourse' do
-  command './launcher bootstrap app'
+  command './launcher stop app && ./launcher bootstrap app'
   action :run
   cwd node['discourse']['directory']
   creates '/var/discourse/shared/standalone'
@@ -47,5 +58,8 @@ execute 'run_discourse' do
   command './launcher start app'
   action :run
   cwd node['discourse']['directory']
-  not_if { Mixlib::ShellOut.new('docker inspect app').run_command }
+  not_if do
+    docker_command = Mixlib::ShellOut.new('docker ps | grep app')
+    docker_command.run_command.exitstatus == 0
+  end
 end

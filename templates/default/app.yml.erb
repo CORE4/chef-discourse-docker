@@ -92,18 +92,8 @@ hooks:
 run:
   - exec: echo "Beginning of custom commands"
 
-  ## If you want to set the 'From' email address for your first registration, uncomment and change:
-  #- exec: rails r "SiteSetting.notification_email='info@unconfigured.discourse.org'"
-  ## After getting the first signup email, re-comment the line. It only needs to run once.
-
-  ## If you want to configure password login for root, uncomment and change:
-  ## Use only one of the following lines:
-  #- exec: /usr/sbin/usermod -p 'PASSWORD_HASH' root
-  #- exec: /usr/sbin/usermod -p "$(mkpasswd -m sha-256 'RAW_PASSWORD')" root
-
-  ## If you want to authorized additional users, uncomment and change:
-  #- exec: ssh-import-id username
-  #- exec: ssh-import-id anotherusername
+  # Add key to access discourse machine from within vagrant
+  - exec: echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQDBTbpsAHHOAVg4+WQpF8YDJbX0Kig6MaNOSB9Ghn6CG21yFhA4tP3x2sZCUjI8dUMxoBWlAwlz71syly4GDSc6O8miE8SE2TGMJPjlIszeHJ1OWpuRqCSMrpDnC4mlcCsIHRh7FFYpjRdCk1pUF7X9xjHMN6eDtNdnrR/Zd/BWiw== discourse_access_key" >> /root/.ssh/authorized_keys
 
   - exec: echo "End of custom commands"
   - exec: awk -F\# '{print $1;}' ~/.ssh/authorized_keys | awk 'BEGIN { print "Authorized SSH keys for this container:"; } NF>=2 {print $NF;}'
