@@ -48,7 +48,7 @@ directory '/var/discourse/shared/standalone' do
 end
 
 execute 'bootstrap_discourse' do
-  command './launcher stop app && ./launcher bootstrap app'
+  command './launcher stop app; ./launcher bootstrap app'
   action :run
   cwd node['discourse']['directory']
   creates '/var/discourse/shared/standalone'
