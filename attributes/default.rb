@@ -1,6 +1,7 @@
 default['discourse']['directory'] = '/var/discourse'
 default['discourse']['git']['remote'] = 'https://github.com/discourse/discourse_docker.git'
 default['discourse']['git']['branch'] = 'master'
+default['discourse']['rebuild'] = false
 
 # Configure the discourse docker template
 default['discourse']['port'] = 80
