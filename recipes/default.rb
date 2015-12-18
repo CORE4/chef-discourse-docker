@@ -32,6 +32,21 @@ cookbook_file '/root/.ssh/discourse_key.pub' do
   action :create
 end
 
+# Gets called when template is updated
+execute 'bootstrap_discourse' do
+  command './launcher stop app; ./launcher bootstrap app'
+  cwd node['discourse']['directory']
+  action :run
+  creates '/var/discourse/shared/standalone'
+end
+
+# Gets called when template is updated
+execute 'rebuild_discourse' do
+  command './launcher rebuild app'
+  cwd node['discourse']['directory']
+  action :nothing
+end
+
 template '/var/discourse/containers/app.yml' do
   source 'app.yml.erb'
   owner 'root'
@@ -39,19 +54,7 @@ template '/var/discourse/containers/app.yml' do
   mode '0755'
   variables({settings: node['discourse']})
   action :create
-end
-
-directory '/var/discourse/shared/standalone' do
-  action :delete
-  recursive true
-  only_if { node['discourse']['rebuild'] }
-end
-
-execute 'bootstrap_discourse' do
-  command './launcher stop app; ./launcher bootstrap app'
-  action :run
-  cwd node['discourse']['directory']
-  creates '/var/discourse/shared/standalone'
+  notifies :run, 'execute[rebuild_discourse]', :immediately
 end
 
 execute 'run_discourse' do
