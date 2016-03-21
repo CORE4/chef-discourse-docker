@@ -32,6 +32,15 @@ cookbook_file '/root/.ssh/discourse_key.pub' do
   action :create
 end
 
+template '/var/discourse/containers/app.yml' do
+  source 'app.yml.erb'
+  owner 'root'
+  group 'root'
+  mode '0755'
+  variables({settings: node['discourse']})
+  action :create
+end
+
 # Gets called when template is updated
 execute 'bootstrap_discourse' do
   command './launcher stop app; ./launcher bootstrap app'
@@ -44,7 +53,11 @@ end
 execute 'rebuild_discourse' do
   command './launcher rebuild app'
   cwd node['discourse']['directory']
-  action :nothing
+  action :run
+  only_if do
+    docker_command = Mixlib::ShellOut.new('docker ps | grep app')
+    docker_command.run_command.exitstatus == 0
+  end
 end
 
 template '/var/discourse/containers/app.yml' do
